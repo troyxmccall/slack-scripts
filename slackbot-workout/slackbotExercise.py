@@ -56,12 +56,14 @@ class Bot:
 
       self.team_domain = settings["teamDomain"]
       self.channel_name = settings["channelName"]
+      self.channel_id = settings["channelId"]
+      self.elite_group_id = settings["eliteGroupId"]
       self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
       self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
       self.num_people_per_callout = settings["callouts"]["numPeople"]
       self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
       self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
-      self.channel_id = settings["channelId"]
+      self.elite_callout_chance = settings["callouts"]["eliteCalloutChance"]
       self.exercises = settings["exercises"]
       self.office_hours_on = settings["officeHours"]["on"]
       self.office_hours_begin = settings["officeHours"]["begin"]
@@ -151,6 +153,20 @@ def fetchActiveUsers(bot):
   return active_users
 
 '''
+Fetches a list of all elite fitness members
+'''
+
+
+def fetchEliteUsers(bot):
+  # Check for group members
+  params = {"token": USER_TOKEN_STRING, "usergroup": bot.elite_group_id}
+  response = requests.get(
+      "https://slack.com/api/usergroups.users.list", params=params)
+  elite_ids = json.loads(response.text, encoding='utf-8')["users"]
+
+  return elite_ids
+
+'''
 Selects an exercise and start time, and sleeps until the time
 period has past.
 '''
@@ -163,7 +179,7 @@ def selectExerciseAndStartTime(bot):
 
   # Announcement String of next lottery time
   lottery_announcement = "_next lottery for " + exercise["name"] + " is in " + str(
-      minute_interval) + (" minutes_" if minute_interval != 1 else " MINUTE_")
+      minute_interval) + (" minutes_" if minute_interval != 1 else " minute_")
 
   # Announce the exercise to the thread
   if not bot.debug:
@@ -240,6 +256,27 @@ def assignExercise(bot, exercise):
       logExercise(bot, winners[i].getUserHandle(), exercise[
                   "name"], exercise_reps, exercise["units"])
 
+  # ELITES
+  if random.random() < bot.elite_callout_chance:
+
+    elite_reps = (random.randrange(
+        exercise["minReps"], exercise["maxReps"]) * 2)
+
+    winner_announcement += " & " + str(elite_reps) + " " + \
+        str(exercise["units"]) + " " + exercise["name"] + " GET SOME "
+
+    winner_announcement += "@gunznbunz!"
+
+    # log ELITES
+    elite_ids = fetchEliteUsers(bot)
+
+    for user_id in elite_ids:
+      user = bot.user_cache[user_id]
+      user.addExercise(exercise, elite_reps)
+
+    logExercise(bot, "@gunznbunz", exercise[
+                "name"], elite_reps, exercise["units"])
+
   # Announce the user
   if not bot.debug:
     requests.post(bot.post_URL, data=winner_announcement)
@@ -262,7 +299,7 @@ def saveUsers(bot):
   s += "Username".ljust(15)
   for exercise in bot.exercises:
     s += exercise["name"] + "  "
-  s += "\n---------------------------------------------------------------\n"
+  s += "\n------------------------------------------------------------------------------------------------------\n"
 
   for user_id in bot.user_cache:
     user = bot.user_cache[user_id]
