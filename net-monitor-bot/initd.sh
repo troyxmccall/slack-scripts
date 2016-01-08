@@ -9,7 +9,7 @@
 ### END INIT INFO
 
 SCRIPT="python net-monitor.py" # CHANGE FOR YOUR NEEDS
-RUNAS="root" # CHANGE FOR YOUR NEEDS
+RUNAS="tmccall" # CHANGE FOR YOUR NEEDS
 
 PIDFILE=/var/run/net-monitor.pid
 LOGFILE=/var/log/net-monitor.log
