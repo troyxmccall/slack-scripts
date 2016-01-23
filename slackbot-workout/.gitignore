@@ -1,6 +1,6 @@
 config.json
 *.pyc
-
+.env
 log*.csv
 log*.csv_DEBUG
 user_cache.save
