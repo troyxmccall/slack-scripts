@@ -8,6 +8,8 @@ from random import shuffle
 import pickle
 import os.path
 import datetime
+import sys
+import signal
 
 from User import User
 
@@ -343,6 +345,11 @@ def isOfficeHours(bot):
 
 
 def main():
+
+  # Handle a SIGTERM so that killing the bot via other methods (like "docker stop")
+  # triggers the same functionality as Ctrl-C (KeyboardInterrupt)
+  signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
+
   bot = Bot()
 
   try:
@@ -365,7 +372,7 @@ def main():
           # If debugging, check again in 5 seconds
           time.sleep(5)
 
-  except KeyboardInterrupt:
+  except (KeyboardInterrupt, SystemExit):
     saveUsers(bot)
 
 
