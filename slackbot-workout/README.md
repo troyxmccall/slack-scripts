@@ -5,10 +5,12 @@ A fun script that gets Slackbot to force your teammates to work out!
 
 # Instructions
 - Clone the repo and navigate into the directory in your terminal.
-- Go to your slack home page [https://{yourgroup}.slack.com/home](http://my.slack.com/home) & click on **Integrations** on the left sidebar.
-- Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need to access these two integrations.
-- In the **Slack API Page**, select **WebAPI** in the left side bar, scroll all the way down, and register yourself an auth token. You should see this. Take note of the token, e.g. `xoxp-2751727432-4028172038-5281317294-3c46b1`. This is your **User Auth Token**
-- In the **Slackbot** (Remote control page). Register an integration & you should see this. **Make sure you grab just the token out of the url**, e.g. `AizJbQ24l38ai4DlQD9yFELb`
+- Sign into [http://my.slack.com/home](http://my.slack.com/home)
+- Go to [https://api.slack.com/web](https://api.slack.com/web)
+- scroll all the way down, and register yourself an auth token. Take note of the token, e.g. `xoxp-2751727432-4028172038-5281317294-3c46b1`. This is your **User Auth Token**
+- Go to [https://slack.com/apps/search?q=slackbot](https://slack.com/apps/search?q=slackbot)
+- Configure a Slackbot integration
+- **Make sure you grab just the token out of the url**, e.g. `AizJbQ24l38ai4DlQD9yFELb`
 - Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
 
    `$ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
