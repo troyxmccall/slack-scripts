@@ -70,6 +70,7 @@ class Bot:
       self.office_hours_on = settings["officeHours"]["on"]
       self.office_hours_begin = settings["officeHours"]["begin"]
       self.office_hours_end = settings["officeHours"]["end"]
+      self.exclude_users = settings["excludeUsers"]
 
       self.debug = settings["debug"]
 
@@ -139,6 +140,12 @@ def fetchActiveUsers(bot):
   active_users = []
 
   for user_id in user_ids:
+
+    # exclude certain users from the final active user list.
+    # should mostly be used for bots
+    if user_id in bot.exclude_users:
+        continue
+
     # Add user to the cache if not already
     if user_id not in bot.user_cache:
       bot.user_cache[user_id] = User(user_id)
