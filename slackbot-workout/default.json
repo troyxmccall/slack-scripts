@@ -12,6 +12,8 @@
 
   "debug": false,
 
+  "excludeUsers": [],
+
   "callouts": {
     "timeBetween": {
       "minTime": 17,
