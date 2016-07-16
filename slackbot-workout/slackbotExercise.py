@@ -144,7 +144,7 @@ def fetchActiveUsers(bot):
     # exclude certain users from the final active user list.
     # should mostly be used for bots
     if user_id in bot.exclude_users:
-        continue
+      continue
 
     # Add user to the cache if not already
     if user_id not in bot.user_cache:
