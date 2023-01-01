@@ -1,21 +1,25 @@
-import random
-import time
-import requests
-import json
 import csv
-import os
-from random import shuffle
-import pickle
-import os.path
 import datetime
-import sys
+import json
+import os
+import os.path
+import pickle
+import random
 import signal
+import sys
+import time
+from random import shuffle
+
+import curl
+import requests
+from dotenv import load_dotenv
 
 from User import User
 
+load_dotenv()
+
 # Environment variables must be set with your tokens
-USER_TOKEN_STRING = os.environ['SLACK_USER_TOKEN_STRING']
-URL_TOKEN_STRING = os.environ['SLACK_URL_TOKEN_STRING']
+BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
 
 HASH = "%23"
 
@@ -40,7 +44,7 @@ class Bot:
     if os.path.isfile('user_cache.save'):
       with open('user_cache.save', 'rb') as f:
         self.user_cache = pickle.load(f)
-        print "Loading " + str(len(self.user_cache)) + " users from cache."
+        print("Loading " + str(len(self.user_cache)) + " users from cache.")
         return self.user_cache
 
     return {}
@@ -73,15 +77,21 @@ class Bot:
       self.exclude_users = settings["excludeUsers"]
 
       self.debug = settings["debug"]
-
-    self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + \
-        URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
+      self.auth_header = {'Authorization': 'Bearer {}'.format(BOT_TOKEN)}
 
 
 ##########################################################################
 '''
 Selects an active user from a list of users
 '''
+
+
+def postSlackMessage(bot, text="", blocks=None):
+  return requests.post('https://slack.com/api/chat.postMessage', {
+    'channel': bot.channel_name,
+    'text': text,
+    'link_names': True,
+  }, headers=bot.auth_header)
 
 
 def selectUser(bot, exercise):
@@ -121,9 +131,13 @@ def selectUser(bot, exercise):
       bot.user_queue.remove(user)
       return user
 
-  # If we weren't able to select one, just pick a random
-  print "Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")"
-  return active_users[random.randrange(0, len(active_users))]
+  if len(active_users) > 0:
+    # If we weren't able to select one, just pick a random
+    print("Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")")
+    return active_users[random.randrange(0, len(active_users))]
+  else:
+    print("no active users ")
+    return []
 
 
 '''
@@ -133,9 +147,13 @@ Fetches a list of all active users in the channel
 
 def fetchActiveUsers(bot):
   # Check for new members
-  params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
-  response = requests.get("https://slack.com/api/channels.info", params=params)
-  user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+  params = {"channel": bot.channel_id}
+  response = requests.get("https://slack.com/api/conversations.members", headers=bot.auth_header, params=params)
+
+  print(curl.parse(response))
+  print(response.text)
+
+  user_ids = json.loads(response.text)["members"]
 
   active_users = []
 
@@ -161,6 +179,7 @@ def fetchActiveUsers(bot):
 
   return active_users
 
+
 '''
 Fetches a list of all elite fitness members
 '''
@@ -168,12 +187,15 @@ Fetches a list of all elite fitness members
 
 def fetchEliteUsers(bot):
   # Check for group members
-  params = {"token": USER_TOKEN_STRING, "usergroup": bot.elite_group_id}
+  params = {"usergroup": bot.elite_group_id}
   response = requests.get(
-      "https://slack.com/api/usergroups.users.list", params=params)
-  elite_ids = json.loads(response.text, encoding='utf-8')["users"]
+    "https://slack.com/api/usergroups.users.list", headers=bot.auth_header, params=params)
+  print(curl.parse(response))
+  print(response.text)
+  elite_ids = json.loads(response.text)["users"]
 
   return elite_ids
+
 
 '''
 Selects an exercise and start time, and sleeps until the time
@@ -188,12 +210,14 @@ def selectExerciseAndStartTime(bot):
 
   # Announcement String of next lottery time
   lottery_announcement = "_next lottery for " + exercise["name"] + " is in " + str(
-      minute_interval) + (" minutes_" if minute_interval != 1 else " minute_")
+    minute_interval) + (" minutes_" if minute_interval != 1 else " minute_")
 
   # Announce the exercise to the thread
   if not bot.debug:
-    requests.post(bot.post_URL, data=lottery_announcement)
-  print lottery_announcement
+    response = postSlackMessage(bot, lottery_announcement)
+    print(curl.parse(response))
+    print(response.text)
+  print(lottery_announcement)
 
   # Sleep the script until time is up
   if not bot.debug:
@@ -232,49 +256,53 @@ Selects a person to do the already-selected exercise
 def assignExercise(bot, exercise):
   # Select number of reps
   exercise_reps = random.randrange(
-      exercise["minReps"], exercise["maxReps"] + 1)
+    exercise["minReps"], exercise["maxReps"] + 1)
 
   winner_announcement = str(exercise_reps) + " " + \
-      str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
+                        str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
 
   # EVERYBODY
   if random.random() < bot.group_callout_chance:
-    winner_announcement += "@channel!"
+    winner_announcement += "@here!"
 
     for user_id in bot.user_cache:
       user = bot.user_cache[user_id]
       user.addExercise(exercise, exercise_reps)
 
-    logExercise(bot, "@channel", exercise[
-                "name"], exercise_reps, exercise["units"])
+    logExercise(bot, "@here", exercise[
+      "name"], exercise_reps, exercise["units"])
 
   else:
     winners = [selectUser(bot, exercise)
                for i in range(bot.num_people_per_callout)]
 
-    for i in range(bot.num_people_per_callout):
+    call_out_count = bot.num_people_per_callout
+    if len(fetchActiveUsers(bot)) < bot.num_people_per_callout:
+      call_out_count = len(fetchActiveUsers(bot))
+
+    for i in range(call_out_count):
       winner_announcement += str(winners[i].getUserHandle())
-      if i == bot.num_people_per_callout - 2:
+      if i == call_out_count - 2:
         winner_announcement += ", and "
-      elif i == bot.num_people_per_callout - 1:
+      elif i == call_out_count - 1:
         winner_announcement += "!"
       else:
         winner_announcement += ", "
 
       winners[i].addExercise(exercise, exercise_reps)
       logExercise(bot, winners[i].getUserHandle(), exercise[
-                  "name"], exercise_reps, exercise["units"])
+        "name"], exercise_reps, exercise["units"])
 
   # ELITES
   if random.random() < bot.elite_callout_chance:
 
     elite_reps = (random.randrange(
-        exercise["minReps"], exercise["maxReps"]) * 2)
+      exercise["minReps"], exercise["maxReps"]) * 2)
 
     winner_announcement += " & " + str(elite_reps) + " " + \
-        str(exercise["units"]) + " " + exercise["name"] + " GET SOME "
+                           str(exercise["units"]) + " " + exercise["name"] + " GET SOME "
 
-    winner_announcement += "@gunznbunz!"
+    winner_announcement += "@workoutmultiplier!"
 
     # log ELITES
     elite_ids = fetchEliteUsers(bot)
@@ -283,13 +311,15 @@ def assignExercise(bot, exercise):
       user = bot.user_cache[user_id]
       user.addExercise(exercise, elite_reps)
 
-    logExercise(bot, "@gunznbunz", exercise[
-                "name"], elite_reps, exercise["units"])
+    logExercise(bot, "@workoutmultiplier", exercise[
+      "name"], elite_reps, exercise["units"])
 
   # Announce the user
   if not bot.debug:
-    requests.post(bot.post_URL, data=winner_announcement)
-  print winner_announcement
+    response = postSlackMessage(bot, winner_announcement)
+    print(curl.parse(response))
+    print(response.text)
+  print(winner_announcement)
 
 
 def logExercise(bot, username, exercise, reps, units):
@@ -326,8 +356,10 @@ def saveUsers(bot):
   s += "```"
 
   if not bot.debug:
-    requests.post(bot.post_URL, data=s)
-  print s
+    response = postSlackMessage(bot, s)
+    print(curl.parse(response))
+    print(response.text)
+  print(s)
 
   # write to file
   with open('user_cache.save', 'wb') as f:
@@ -337,22 +369,21 @@ def saveUsers(bot):
 def isOfficeHours(bot):
   if not bot.office_hours_on:
     if bot.debug:
-      print "not office hours"
+      print("not office hours")
     return True
   now = datetime.datetime.now()
   now_time = now.time()
   if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
     if bot.debug:
-      print "in office hours"
+      print("in office hours")
     return True
   else:
     if bot.debug:
-      print "out office hours"
+      print("out office hours")
     return False
 
 
 def main():
-
   # Handle a SIGTERM so that killing the bot via other methods (like "docker stop")
   # triggers the same functionality as Ctrl-C (KeyboardInterrupt)
   signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
@@ -361,7 +392,7 @@ def main():
 
   try:
     while True:
-      if isOfficeHours(bot):
+      if isOfficeHours(bot) and len(fetchActiveUsers(bot)) > 0:
         # Re-fetch config file if settings have changed
         bot.setConfiguration()
 

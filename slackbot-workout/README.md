@@ -11,11 +11,9 @@ A fun script that gets Slackbot to force your teammates to work out!
 - Go to [https://slack.com/apps/search?q=slackbot](https://slack.com/apps/search?q=slackbot)
 - Configure a Slackbot integration
 - **Make sure you grab just the token out of the url**, e.g. `AizJbQ24l38ai4DlQD9yFELb`
-- Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
+- Save your SLACK_BOT_TOKEN and SLACK_BOT_TOKEN as environmental variables in your terminal.
 
-   `$ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
-
-   `$ export SLACK_URL_TOKEN_STRING=YOURURLTOKEN`
+   `$ export SLACK_BOT_TOKEN=YOURUSERTOKEN`
 
    If you need help with this, try adapting the first 5 steps of the guide to [edit your .bash_profile](http://natelandau.com/my-mac-osx-bash_profile/)
 
@@ -41,7 +39,7 @@ Run the script to start the workouts and hit ctrl+c to stop the script. Hope you
 
 ## Docker instructions
 - Follow above instructions 1-6.
-- Open `.env.default` and set `SLACK_USER_TOKEN_STRING` and `SLACK_URL_TOKEN_STRING`. Save the file as `.env` in the same directory.
+- Open `.env.default` and set `SLACK_BOT_TOKEN`. Save the file as `.env` in the same directory.
 - Build the image:
 
    `$ docker build --rm -t slackbot_workout .`

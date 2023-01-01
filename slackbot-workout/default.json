@@ -22,8 +22,8 @@
     },
     "numPeople": 5,
     "slidingWindowSize": 10,
-    "groupCalloutChance": 0.10,
-    "eliteCalloutChance": 0.10
+    "groupCalloutChance": 0.20,
+    "eliteCalloutChance": 0.0
   },
 
   "exercises": [{
