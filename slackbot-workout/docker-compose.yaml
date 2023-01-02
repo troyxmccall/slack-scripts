@@ -4,11 +4,11 @@ services:
     logging:
       driver: "json-file"
       options:
-          max-size: "10m"
-          max-file: "5"
+        max-size: "10m"
+        max-file: "5"
     restart: always
     env_file:
-      - .env        
+      - .env
     image: troyxmccall/slackbot_workout
     volumes:
       - './.env:/app/.env'

@@ -205,7 +205,7 @@ period has past.
 
 def selectExerciseAndStartTime(bot):
   next_time_interval = selectNextTimeInterval(bot)
-  minute_interval = next_time_interval / 60
+  minute_interval = int(next_time_interval / 60)
   exercise = selectExercise(bot)
 
   # Announcement String of next lottery time
@@ -373,7 +373,9 @@ def isOfficeHours(bot):
     return True
   now = datetime.datetime.now()
   now_time = now.time()
-  if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
+  day_of_week = datetime.datetime.today().weekday()
+
+  if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end) and day_of_week < 5:
     if bot.debug:
       print("in office hours")
     return True
@@ -389,6 +391,8 @@ def main():
   signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
 
   bot = Bot()
+
+  postSlackMessage(bot, "_rebooting..._")
 
   try:
     while True:

@@ -1,8 +1,9 @@
-import os
-import requests
-import json
 import datetime
+import json
+import os
+
 import curl
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,10 +11,9 @@ load_dotenv()
 # Environment variables must be set with your tokens
 BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
 
-print(BOT_TOKEN)
-
-#lazy
+# lazy
 AUTH_HEADER = {'Authorization': 'Bearer {}'.format(BOT_TOKEN)}
+
 
 class User:
 
@@ -51,7 +51,7 @@ class User:
   def fetchNames(self):
     params = {"user": self.id}
     response = requests.get("https://slack.com/api/users.info",
-                            headers=AUTH_HEADER,params=params)
+                            headers=AUTH_HEADER, params=params)
 
     print(curl.parse(response))
     print(response.text)
@@ -74,7 +74,7 @@ class User:
     try:
       params = {"user": self.id}
       response = requests.get("https://slack.com/api/users.getPresence",
-                              headers=AUTH_HEADER,params=params)
+                              headers=AUTH_HEADER, params=params)
 
       print(curl.parse(response))
       print(response.text)
@@ -89,13 +89,13 @@ class User:
   def addExercise(self, exercise, reps):
     # Add to total counts
     self.exercises[exercise["id"]] = self.exercises.get(
-        exercise["id"], 0) + reps
+      exercise["id"], 0) + reps
     self.exercise_counts[exercise["id"]] = self.exercise_counts.get(exercise[
-                                                                    "id"], 0) + 1
+                                                                      "id"], 0) + 1
 
     # Add to exercise history record
     self.exercise_history.append([datetime.datetime.now().isoformat(), exercise[
-                                 "id"], exercise["name"], reps, exercise["units"]])
+      "id"], exercise["name"], reps, exercise["units"]])
 
   def hasDoneExercise(self, exercise):
     return exercise["id"] in self.exercise_counts

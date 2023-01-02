@@ -4,12 +4,12 @@ A quick script to fetch the id of a channel you want to use.
 USAGE: python fetchChannelId.py <channel_name>
 '''
 
-import requests
-import sys
-import os
 import json
-from dotenv import load_dotenv
+import os
+import sys
 
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -28,5 +28,6 @@ channels = json.loads(response.text)["channels"]
 
 for channel in channels:
   if channel["name"] == channelName:
-    print channel["id"]
+    print
+    channel["id"]
     break
