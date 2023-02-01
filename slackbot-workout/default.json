@@ -3,17 +3,13 @@
   "channelName": "general",
   "channelId": "channelIdHere",
   "eliteGroupId": "eliteGroupIdHere",
-
   "officeHours": {
     "on": true,
     "begin": 9,
     "end": 18
   },
-
   "debug": false,
-
   "excludeUsers": [],
-
   "callouts": {
     "timeBetween": {
       "minTime": 17,
@@ -22,51 +18,58 @@
     },
     "numPeople": 5,
     "slidingWindowSize": 10,
-    "groupCalloutChance": 0.10,
-    "eliteCalloutChance": 0.10
+    "groupCalloutChance": 0.20,
+    "eliteCalloutChance": 0.0
   },
-
-  "exercises": [{
-    "id": 0,
-    "name": "pushups",
-    "minReps": 8,
-    "maxReps": 15,
-    "units": "rep"
-  }, {
-    "id": 1,
-    "name": "planks",
-    "minReps": 20,
-    "maxReps": 60,
-    "units": "second"
-  }, {
-    "id": 2,
-    "name": "wall sit",
-    "minReps": 40,
-    "maxReps": 60,
-    "units": "second"
-  }, {
-    "id": 3,
-    "name": "chair dips",
-    "minReps": 8,
-    "maxReps": 15,
-    "units": "rep"
-  }, {
-    "id": 4,
-    "name": "calf raises",
-    "minReps": 20,
-    "maxReps": 30,
-    "units": "rep"
-  }, {
-    "id": 5,
-    "name": "lunges",
-    "minReps": 15,
-    "maxReps": 25,
-    "units": "rep"
-  }, {
-    "id": 6,
-    "name": "squats",
-    "minReps": 15,
-    "maxReps": 25,
-    "units": "rep"
-  }]
+  "exercises": [
+    {
+      "id": 0,
+      "name": "pushups",
+      "minReps": 8,
+      "maxReps": 15,
+      "units": "rep"
+    },
+    {
+      "id": 1,
+      "name": "planks",
+      "minReps": 20,
+      "maxReps": 60,
+      "units": "second"
+    },
+    {
+      "id": 2,
+      "name": "wall sit",
+      "minReps": 40,
+      "maxReps": 60,
+      "units": "second"
+    },
+    {
+      "id": 3,
+      "name": "chair dips",
+      "minReps": 8,
+      "maxReps": 15,
+      "units": "rep"
+    },
+    {
+      "id": 4,
+      "name": "calf raises",
+      "minReps": 20,
+      "maxReps": 30,
+      "units": "rep"
+    },
+    {
+      "id": 5,
+      "name": "lunges",
+      "minReps": 15,
+      "maxReps": 25,
+      "units": "rep"
+    },
+    {
+      "id": 6,
+      "name": "squats",
+      "minReps": 15,
+      "maxReps": 25,
+      "units": "rep"
+    }
+  ]
 }

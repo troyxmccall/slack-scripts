@@ -1,0 +1,15 @@
+version: '3.3'
+services:
+  atom:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    restart: always
+    env_file:
+      - .env
+    image: troyxmccall/slackbot_workout
+    volumes:
+      - './.env:/app/.env'
+      - './config.json:/app/config.json'
